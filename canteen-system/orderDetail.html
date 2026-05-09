@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>订单详情</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f7fb;
+        }
+        
+        .header {
+            background: white;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .back-btn {
+            font-size: 26px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            background: #f0f2f5;
+        }
+        
+        .header h1 {
+            font-size: 19px;
+            flex: 1;
+        }
+        
+        /* 取餐码大卡片 */
+        .pickup-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 20px 20px;
+            border-radius: 36px;
+            padding: 32px 24px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(102,126,234,0.35);
+        }
+        
+        .pickup-title {
+            color: rgba(255,255,255,0.85);
+            font-size: 14px;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+        }
+        
+        .pickup-code {
+            font-size: 52px;
+            font-weight: bold;
+            color: white;
+            letter-spacing: 10px;
+            margin: 16px 0;
+            font-family: monospace;
+        }
+        
+        .pickup-hint {
+            color: rgba(255,255,255,0.75);
+            font-size: 12px;
+            margin-top: 16px;
+        }
+        
+        .reminder-banner {
+            background: #fff3e0;
+            margin: 16px 16px;
+            border-radius: 20px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        
+        .reminder-banner span:first-child {
+            font-size: 28px;
+        }
+        
+        .section {
+            background: white;
+            margin: 12px 16px;
+            border-radius: 24px;
+            padding: 18px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            padding-left: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 14px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .dish-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .timeline {
+            padding: 5px 0;
+        }
+        
+        .timeline-item {
+            display: flex;
+            gap: 14px;
+            padding: 12px 0;
+            border-left: 2px solid #e0e0e0;
+            margin-left: 14px;
+            padding-left: 22px;
+            position: relative;
+        }
+        
+        .timeline-item:before {
+            content: "●";
+            position: absolute;
+            left: -9px;
+            top: 12px;
+            color: #667eea;
+            background: white;
+            padding: 0 3px;
+        }
+        
+        .timeline-time {
+            font-size: 12px;
+            color: #888;
+            min-width: 85px;
+        }
+        
+        .timeline-text {
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-wait_cook { background: #e3f2fd; color: #2196f3; }
+        .status-ready { background: #e8f5e9; color: #4caf50; }
+        .status-completed { background: #e8eaf6; color: #5c6bc0; }
+        
+        .btn-area {
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-primary {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="back-btn" onclick="history.back()">←</div>
+        <h1>订单详情</h1>
+        <div style="width: 40px;"></div>
+    </div>
+    
+    <div id="orderContent"></div>
+    
+    <script>
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        let orderId = new URLSearchParams(location.search).get('id');
+        
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        }
+        
+        function getStatusText(status) {
+            const map = {1: '待出餐', 2: '可取餐', 3: '已完成'};
+            return map[status] || '未知';
+        }
+        
+        function getStatusClass(status) {
+            const map = {1: 'status-wait_cook', 2: 'status-ready', 3: 'status-completed'};
+            return map[status] || '';
+        }
+        
+        function loadOrderDetail() {
+            let orders = JSON.parse(localStorage.getItem('orders_' + currentUser.id) || '[]');
+            let order = orders.find(o => o.id == orderId);
+            
+            if (!order) {
+                document.getElementById('orderContent').innerHTML = '<div style="padding:50px;text-align:center;">订单不存在</div>';
+                return;
+            }
+            
+            let statusText = getStatusText(order.orderStatus);
+            let statusClass = getStatusClass(order.orderStatus);
+            
+            let html = '';
+            
+            // 取餐码展示（可取餐状态才显示大码）
+            if (order.orderStatus == 2 && order.pickupCode) {
+                html += `
+                    <div class="pickup-card">
+                        <div class="pickup-title">✨ 取 餐 码 ✨</div>
+                        <div class="pickup-code">${order.pickupCode}</div>
+                        <div class="pickup-hint">请凭此码到食堂二楼取餐窗口领取餐品</div>
+                    </div>
+                `;
+            } else if (order.orderStatus == 1) {
+                html += `
+                    <div class="reminder-banner">
+                        <span>🍳</span>
+                        <div><strong>厨房正在备餐中</strong><div style="font-size:12px;color:#888;">预计10-15分钟可出餐，请留意消息提醒</div></div>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="section">
+                    <div class="section-title">📄 订单信息</div>
+                    <div class="info-row"><span>订单编号</span><span>${order.orderNo}</span></div>
+                    <div class="info-row"><span>订单状态</span><span class="status-badge ${statusClass}">${statusText}</span></div>
+                    <div class="info-row"><span>下单时间</span><span>${order.createTime}</span></div>
+                    <div class="info-row"><span>取餐地点</span><span>食堂二楼取餐窗口</span></div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">🍽️ 点餐明细</div>
+            `;
+            
+            order.details.forEach(detail => {
+                html += `<div class="dish-item"><span>${detail.name} × ${detail.qty}</span><span>¥${(detail.price * detail.qty).toFixed(2)}</span></div>`;
+            });
+            
+            html += `
+                    <div class="info-row" style="border-top:1px solid #eee;margin-top:10px;padding-top:12px;"><span>共${order.details.length}件商品</span><span style="font-weight:700;color:#f5576c;">¥${order.totalPrice.toFixed(2)}</span></div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">📅 订单进度</div>
+                    <div class="timeline">
+            `;
+            
+            if (order.createTime) {
+                html += `<div class="timeline-item"><div class="timeline-time">${order.createTime}</div><div class="timeline-text">订单已提交并付款</div></div>`;
+            }
+            if (order.cookTime) {
+                html += `<div class="timeline-item"><div class="timeline-time">${order.cookTime}</div><div class="timeline-text">餐品已出餐，可前往取餐</div></div>`;
+            }
+            if (order.pickupTime) {
+                html += `<div class="timeline-item"><div class="timeline-time">${order.pickupTime}</div><div class="timeline-text">已取餐，感谢惠顾</div></div>`;
+            } else if (order.orderStatus == 1) {
+                html += `<div class="timeline-item"><div class="timeline-time">等待中</div><div class="timeline-text">厨房正在准备您的餐品</div></div>`;
+            }
+            
+            html += `</div></div>`;
+            
+            if (order.orderStatus == 2) {
+                html += `<div class="btn-area"><button class="btn-primary" onclick="confirmPickup()">✅ 确认取餐</button></div>`;
+            }
+            
+            document.getElementById('orderContent').innerHTML = html;
+        }
+        
+        function confirmPickup() {
+            let orders = JSON.parse(localStorage.getItem('orders_' + currentUser.id) || '[]');
+            let orderIndex = orders.findIndex(o => o.id == orderId);
+            if (orderIndex !== -1 && orders[orderIndex].orderStatus == 2) {
+                let now = new Date();
+                let timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+                orders[orderIndex].orderStatus = 3;
+                orders[orderIndex].pickupTime = timeStr;
+                localStorage.setItem('orders_' + currentUser.id, JSON.stringify(orders));
+                
+                // 发送消息
+                let messages = JSON.parse(localStorage.getItem('messages_' + currentUser.id) || '[]');
+                messages.unshift({
+                    id: Date.now(),
+                    title: '取餐成功',
+                    content: `订单 ${orders[orderIndex].orderNo} 已取餐成功，欢迎下次光临！`,
+                    type: 1,
+                    status: 0,
+                    createTime: timeStr
+                });
+                localStorage.setItem('messages_' + currentUser.id, JSON.stringify(messages));
+                
+                alert('🎉 取餐成功！');
+                loadOrderDetail();
+            }
+        }
+        
+        loadOrderDetail();
+        setInterval(loadOrderDetail, 5000);
+    </script>
+</body>
+</html>

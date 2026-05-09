@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>消息提醒</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f7fb;
+        }
+        
+        .header {
+            background: white;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .back-btn {
+            font-size: 26px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            background: #f0f2f5;
+        }
+        
+        .header h1 {
+            font-size: 19px;
+            flex: 1;
+        }
+        
+        .message-item {
+            background: white;
+            margin: 12px 16px;
+            border-radius: 20px;
+            padding: 16px;
+            display: flex;
+            gap: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            transition: all 0.2s;
+        }
+        
+        .message-item:active {
+            transform: scale(0.98);
+        }
+        
+        .message-icon {
+            width: 52px;
+            height: 52px;
+            background: #e8f5e9;
+            border-radius: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+        
+        .message-content {
+            flex: 1;
+        }
+        
+        .message-title {
+            font-weight: 700;
+            margin-bottom: 6px;
+            font-size: 16px;
+        }
+        
+        .message-text {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 6px;
+        }
+        
+        .unread {
+            background: #eef2ff;
+            border-left: 4px solid #667eea;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 70px 20px;
+            color: #aaa;
+        }
+        
+        .empty-state span {
+            font-size: 64px;
+            display: block;
+            margin-bottom: 16px;
+        }
+        
+        .clear-btn {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 14px;
+            padding: 8px 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="back-btn" onclick="history.back()">←</div>
+        <h1>消息提醒</h1>
+        <button class="clear-btn" onclick="clearAll()">清空</button>
+    </div>
+    
+    <div id="messageList"></div>
+    
+    <script>
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        }
+        
+        function loadMessages() {
+            let messages = JSON.parse(localStorage.getItem('messages_' + currentUser.id) || '[]');
+            
+            if (messages.length === 0) {
+                document.getElementById('messageList').innerHTML = `
+                    <div class="empty-state">
+                        <span>🔔</span>
+                        <p>暂无消息提醒</p>
+                        <p style="font-size:12px;margin-top:8px;">订单状态更新时会收到提醒</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            messages.forEach(msg => {
+                let icon = msg.type == 1 ? '🍳' : '📢';
+                let unreadClass = msg.status == 0 ? 'unread' : '';
+                html += `
+                    <div class="message-item ${unreadClass}" onclick="markRead(${msg.id})">
+                        <div class="message-icon">${icon}</div>
+                        <div class="message-content">
+                            <div class="message-title">${msg.title}</div>
+                            <div class="message-text">${msg.content}</div>
+                            <div class="message-time">${msg.createTime || msg.create_time}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('messageList').innerHTML = html;
+        }
+        
+        function markRead(msgId) {
+            let messages = JSON.parse(localStorage.getItem('messages_' + currentUser.id) || '[]');
+            let msg = messages.find(m => m.id == msgId);
+            if (msg) {
+                msg.status = 1;
+                localStorage.setItem('messages_' + currentUser.id, JSON.stringify(messages));
+                loadMessages();
+            }
+        }
+        
+        function clearAll() {
+            if (confirm('确定要清空所有消息吗？')) {
+                localStorage.setItem('messages_' + currentUser.id, '[]');
+                loadMessages();
+            }
+        }
+        
+        loadMessages();
+        setInterval(loadMessages, 10000);
+    </script>
+</body>
+</html>

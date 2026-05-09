@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>食堂点餐 · 登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 40px;
+            padding: 40px 28px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+        
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 44px;
+            box-shadow: 0 8px 20px rgba(245,87,108,0.3);
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        
+        .logo p {
+            font-size: 13px;
+            color: #999;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 15px 18px;
+            border: 1.5px solid #eee;
+            border-radius: 20px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 17px;
+            font-weight: 600;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn-login:active {
+            transform: scale(0.97);
+        }
+        
+        .register-link {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: #888;
+        }
+        
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .demo-account {
+            background: #f8f9fa;
+            padding: 14px;
+            border-radius: 20px;
+            margin-top: 28px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            border: 1px dashed #ddd;
+        }
+        
+        .demo-account span {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .error-msg {
+            background: #fff0f0;
+            color: #f5576c;
+            padding: 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo">
+            <div class="logo-icon">??</div>
+            <h1>高校食堂在线订餐</h1>
+            <p>便捷 · 快速 · 智能化</p>
+        </div>
+        
+        <div id="errorMsg" class="error-msg" style="display: none;"></div>
+        
+        <form id="loginForm" onsubmit="return false;">
+            <div class="input-group">
+                <label>?? 学号/账号</label>
+                <input type="text" id="username" placeholder="请输入学号或账号" autocomplete="off" value="student01">
+            </div>
+            <div class="input-group">
+                <label>?? 密码</label>
+                <input type="password" id="password" placeholder="请输入密码" value="123456">
+            </div>
+            <button type="button" class="btn-login" onclick="doLogin()">登 录</button>
+        </form>
+        
+        <div class="register-link">
+            还没有账号？ <a href="javascript:void(0)" onclick="showRegister()">立即注册</a>
+        </div>
+        
+        <div class="demo-account">
+            ??? 演示账号：<span>student01</span> / <span>123456</span>
+        </div>
+    </div>
+    
+    <script>
+        // 初始化默认用户数据
+        if (!localStorage.getItem('users')) {
+            const defaultUsers = [
+                { id: 1, username: 'student01', password: '123456', real_name: '张小明', phone: '13800138001', student_id: '2024001' },
+                { id: 2, username: 'student02', password: '123456', real_name: '李芳芳', phone: '13800138002', student_id: '2024002' }
+            ];
+            localStorage.setItem('users', JSON.stringify(defaultUsers));
+        }
+        
+        function doLogin() {
+            var username = document.getElementById('username').value.trim();
+            var password = document.getElementById('password').value.trim();
+            
+            if (!username || !password) {
+                showError('请输入账号和密码');
+                return;
+            }
+            
+            let users = JSON.parse(localStorage.getItem('users')) || [];
+            let user = users.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                showError('');
+                window.location.href = 'index.html';
+            } else {
+                showError('账号或密码错误');
+            }
+        }
+        
+        function showRegister() {
+            let users = JSON.parse(localStorage.getItem('users')) || [];
+            let newId = users.length + 1;
+            let newUser = {
+                id: newId,
+                username: 'stu' + (1000 + newId),
+                password: '123456',
+                real_name: '新同学' + newId,
+                phone: '1380013' + (8000 + newId),
+                student_id: '2024' + (100 + newId)
+            };
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('注册成功！\n账号：' + newUser.username + '\n密码：123456');
+            document.getElementById('username').value = newUser.username;
+            document.getElementById('password').value = '123456';
+        }
+        
+        function showError(msg) {
+            var errorDiv = document.getElementById('errorMsg');
+            if (msg) {
+                errorDiv.textContent = msg;
+                errorDiv.style.display = 'block';
+                setTimeout(function() {
+                    errorDiv.style.display = 'none';
+                }, 3000);
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

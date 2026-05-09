@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>我的订单</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f7fb;
+            padding-bottom: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .back-btn {
+            font-size: 26px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            background: #f0f2f5;
+        }
+        
+        .header h1 {
+            font-size: 19px;
+            flex: 1;
+        }
+        
+        .status-tabs {
+            background: white;
+            padding: 12px 16px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .status-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .status-tab {
+            padding: 8px 22px;
+            background: #f0f2f5;
+            border-radius: 30px;
+            font-size: 14px;
+            white-space: nowrap;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .status-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .order-card {
+            background: white;
+            margin: 12px 16px;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .order-card:active {
+            transform: scale(0.98);
+        }
+        
+        .order-header {
+            padding: 14px 16px;
+            background: #fafbfc;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .order-no {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .order-status {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        
+        .status-wait_pay { background: #fff3e0; color: #ff9800; }
+        .status-wait_cook { background: #e3f2fd; color: #2196f3; }
+        .status-ready { background: #e8f5e9; color: #4caf50; }
+        .status-completed { background: #e8eaf6; color: #5c6bc0; }
+        
+        .order-body {
+            padding: 14px 16px;
+        }
+        
+        .order-dish {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 6px;
+        }
+        
+        .order-dish span {
+            color: #888;
+            margin-left: 8px;
+        }
+        
+        .order-total {
+            text-align: right;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+            margin-top: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .pickup-code-area {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 16px 12px 16px;
+            border-radius: 18px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .pickup-code-label {
+            color: rgba(255,255,255,0.8);
+            font-size: 11px;
+        }
+        
+        .pickup-code {
+            font-size: 26px;
+            font-weight: bold;
+            color: white;
+            letter-spacing: 4px;
+            font-family: monospace;
+        }
+        
+        .order-footer {
+            padding: 12px 16px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 22px;
+            border-radius: 30px;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-outline {
+            background: white;
+            border: 1px solid #ddd;
+            color: #666;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aaa;
+        }
+        
+        .empty-state span {
+            font-size: 60px;
+            display: block;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="back-btn" onclick="history.back()">←</div>
+        <h1>我的订单</h1>
+        <div style="width: 40px;"></div>
+    </div>
+    
+    <div class="status-tabs" id="statusTabs">
+        <div class="status-tab active" data-status="all">全部</div>
+        <div class="status-tab" data-status="1">待出餐</div>
+        <div class="status-tab" data-status="2">可取餐</div>
+        <div class="status-tab" data-status="3">已完成</div>
+    </div>
+    
+    <div id="orderList"></div>
+    
+    <script>
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        let currentStatus = 'all';
+        let allOrders = [];
+        
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        }
+        
+        function loadOrders() {
+            allOrders = JSON.parse(localStorage.getItem('orders_' + currentUser.id) || '[]');
+            renderOrders();
+        }
+        
+        function getStatusText(status) {
+            const map = {1: '待出餐', 2: '可取餐', 3: '已完成', 0: '待付款'};
+            return map[status] || '未知';
+        }
+        
+        function getStatusClass(status) {
+            const map = {0: 'status-wait_pay', 1: 'status-wait_cook', 2: 'status-ready', 3: 'status-completed'};
+            return map[status] || '';
+        }
+        
+        function renderOrders() {
+            let filtered = currentStatus === 'all' 
+                ? allOrders 
+                : allOrders.filter(o => o.orderStatus == currentStatus);
+            
+            if (filtered.length === 0) {
+                document.getElementById('orderList').innerHTML = `
+                    <div class="empty-state">
+                        <span>📋</span>
+                        <p>暂无订单</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            filtered.forEach(order => {
+                let statusText = getStatusText(order.orderStatus);
+                let statusClass = getStatusClass(order.orderStatus);
+                
+                html += `
+                    <div class="order-card" onclick="viewDetail(${order.id})">
+                        <div class="order-header">
+                            <span class="order-no">订单号: ${order.orderNo}</span>
+                            <span class="order-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="order-body">
+                `;
+                
+                order.details.forEach(detail => {
+                    html += `<div class="order-dish">${detail.name} × ${detail.qty}<span>¥${(detail.price * detail.qty).toFixed(2)}</span></div>`;
+                });
+                
+                html += `
+                            <div class="order-total">共${order.details.length}件 总计: ¥${order.totalPrice.toFixed(2)}</div>
+                        </div>
+                `;
+                
+                if (order.orderStatus == 2 && order.pickupCode) {
+                    html += `
+                        <div class="pickup-code-area">
+                            <div><div class="pickup-code-label">取餐码</div><div style="color:white;font-size:12px;">凭码取餐</div></div>
+                            <div class="pickup-code">${order.pickupCode}</div>
+                        </div>
+                    `;
+                }
+                
+                html += `<div class="order-footer">`;
+                if (order.orderStatus == 2) {
+                    html += `<button class="btn btn-primary" onclick="event.stopPropagation();confirmPickup(${order.id})">确认取餐</button>`;
+                }
+                html += `</div></div>`;
+            });
+            
+            document.getElementById('orderList').innerHTML = html;
+        }
+        
+        function viewDetail(orderId) {
+            window.location.href = 'orderDetail.html?id=' + orderId;
+        }
+        
+        function confirmPickup(orderId) {
+            let orders = JSON.parse(localStorage.getItem('orders_' + currentUser.id) || '[]');
+            let orderIndex = orders.findIndex(o => o.id == orderId);
+            if (orderIndex !== -1 && orders[orderIndex].orderStatus == 2) {
+                let now = new Date();
+                let timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+                orders[orderIndex].orderStatus = 3;
+                orders[orderIndex].pickupTime = timeStr;
+                localStorage.setItem('orders_' + currentUser.id, JSON.stringify(orders));
+                
+                // 发送取餐成功消息
+                let messages = JSON.parse(localStorage.getItem('messages_' + currentUser.id) || '[]');
+                messages.unshift({
+                    id: Date.now(),
+                    title: '取餐成功',
+                    content: `订单 ${orders[orderIndex].orderNo} 已取餐成功，感谢您的光临！`,
+                    type: 1,
+                    status: 0,
+                    createTime: timeStr
+                });
+                localStorage.setItem('messages_' + currentUser.id, JSON.stringify(messages));
+                
+                alert('🎉 取餐成功！欢迎下次光临~');
+                loadOrders();
+            }
+        }
+        
+        // 绑定状态切换
+        document.querySelectorAll('.status-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                currentStatus = this.dataset.status;
+                renderOrders();
+            });
+        });
+        
+        loadOrders();
+        setInterval(loadOrders, 5000);
+    </script>
+</body>
+</html>

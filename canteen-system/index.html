@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>食堂点餐 · 点餐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f7fb;
+            padding-bottom: 85px;
+        }
+        
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 16px 50px 16px;
+            border-radius: 0 0 28px 28px;
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .welcome {
+            color: white;
+        }
+        
+        .welcome .greeting {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+        
+        .welcome h2 {
+            font-size: 20px;
+            margin-top: 4px;
+        }
+        
+        .icons {
+            display: flex;
+            gap: 14px;
+        }
+        
+        .icon-btn {
+            background: rgba(255,255,255,0.2);
+            width: 44px;
+            height: 44px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .icon-btn:active {
+            background: rgba(255,255,255,0.35);
+            transform: scale(0.95);
+        }
+        
+        .badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #f5576c;
+            color: white;
+            font-size: 10px;
+            border-radius: 10px;
+            padding: 2px 6px;
+            min-width: 18px;
+            text-align: center;
+        }
+        
+        /* 搜索框 */
+        .search-box {
+            background: white;
+            border-radius: 30px;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
+        
+        .search-box span {
+            font-size: 18px;
+            color: #999;
+        }
+        
+        .search-box input {
+            flex: 1;
+            border: none;
+            font-size: 15px;
+            background: transparent;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+        }
+        
+        /* 分类标签 */
+        .category-tabs {
+            background: white;
+            margin: -25px 16px 0 16px;
+            border-radius: 24px;
+            padding: 12px 12px;
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        }
+        
+        .category-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .category-item {
+            padding: 9px 22px;
+            background: #f0f2f5;
+            border-radius: 30px;
+            font-size: 14px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.25s;
+            font-weight: 500;
+        }
+        
+        .category-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+        }
+        
+        /* 菜品列表 */
+        .dish-list {
+            padding: 16px;
+        }
+        
+        .dish-card {
+            background: white;
+            border-radius: 24px;
+            margin-bottom: 14px;
+            padding: 14px;
+            display: flex;
+            gap: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            transition: transform 0.2s;
+        }
+        
+        .dish-card:active {
+            transform: scale(0.98);
+        }
+        
+        .dish-img {
+            width: 85px;
+            height: 85px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            flex-shrink: 0;
+        }
+        
+        .dish-info {
+            flex: 1;
+        }
+        
+        .dish-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 6px;
+        }
+        
+        .dish-desc {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        
+        .dish-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f5576c;
+        }
+        
+        .dish-price small {
+            font-size: 12px;
+            font-weight: normal;
+            color: #aaa;
+        }
+        
+        .dish-sales {
+            font-size: 11px;
+            color: #bbb;
+            margin-top: 5px;
+        }
+        
+        .cart-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        
+        .cart-control button {
+            width: 34px;
+            height: 34px;
+            border-radius: 17px;
+            border: none;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #f0f2f5;
+            color: #667eea;
+            transition: all 0.2s;
+        }
+        
+        .cart-control button:active {
+            transform: scale(0.92);
+            background: #e0e4e8;
+        }
+        
+        .cart-control .count {
+            font-size: 17px;
+            font-weight: 600;
+            min-width: 32px;
+            text-align: center;
+        }
+        
+        /* 底部购物车栏 */
+        .cart-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 -6px 20px rgba(0,0,0,0.08);
+            border-radius: 28px 28px 0 0;
+            z-index: 100;
+        }
+        
+        .cart-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+        }
+        
+        .cart-icon {
+            position: relative;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 6px 15px rgba(102,126,234,0.3);
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #f5576c;
+            color: white;
+            font-size: 11px;
+            border-radius: 12px;
+            padding: 3px 8px;
+            min-width: 22px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .cart-total {
+            font-size: 20px;
+            font-weight: 800;
+            color: #f5576c;
+        }
+        
+        .cart-empty-tip {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 2px;
+        }
+        
+        .btn-order {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+        }
+        
+        .btn-order:active {
+            transform: scale(0.96);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #bbb;
+        }
+        
+        .empty-state span {
+            font-size: 60px;
+            display: block;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-top">
+            <div class="welcome">
+                <div class="greeting">欢迎回来</div>
+                <h2 id="userName">同学</h2>
+            </div>
+            <div class="icons">
+                <div class="icon-btn" onclick="location.href='messages.html'">
+                    🔔
+                    <span id="msgBadge" class="badge" style="display: none;">0</span>
+                </div>
+                <div class="icon-btn" onclick="location.href='orders.html'">📋</div>
+                <div class="icon-btn" onclick="location.href='profile.html'">👤</div>
+            </div>
+        </div>
+        <div class="search-box">
+            <span>🔍</span>
+            <input type="text" id="searchInput" placeholder="搜索菜品..." oninput="searchDish()">
+        </div>
+    </div>
+    
+    <div class="category-tabs" id="categoryTabs"></div>
+    
+    <div class="dish-list" id="dishList"></div>
+    
+    <div class="cart-bar" id="cartBar">
+        <div class="cart-info" onclick="showCartTip()">
+            <div class="cart-icon">
+                🛒
+                <span class="cart-badge" id="cartCount">0</span>
+            </div>
+            <div>
+                <div class="cart-total" id="cartTotal">¥0.00</div>
+                <div class="cart-empty-tip" id="emptyTip">暂无商品</div>
+            </div>
+        </div>
+        <button class="btn-order" onclick="goToConfirm()">去下单</button>
+    </div>
+    
+    <script>
+        // 菜品数据
+        const dishesData = [
+            { id: 1, name: '🍗 蜜汁烤鸡腿', categoryId: 1, categoryName: '荤菜', price: 12, desc: '秘制酱料烤制，外酥里嫩', sales: 328, icon: '🍗' },
+            { id: 2, name: '🥩 红烧肉', categoryId: 1, categoryName: '荤菜', price: 15, desc: '肥而不腻，入口即化', sales: 256, icon: '🥩' },
+            { id: 3, name: '🐟 清蒸鲈鱼', categoryId: 1, categoryName: '荤菜', price: 18, desc: '鲜嫩多汁，营养丰富', sales: 189, icon: '🐟' },
+            { id: 4, name: '🥬 蒜蓉空心菜', categoryId: 2, categoryName: '素菜', price: 6, desc: '清爽可口，现炒现做', sales: 412, icon: '🥬' },
+            { id: 5, name: '🥦 西兰花炒木耳', categoryId: 2, categoryName: '素菜', price: 7, desc: '健康低脂，维C满满', sales: 298, icon: '🥦' },
+            { id: 6, name: '🍲 西红柿炒蛋', categoryId: 2, categoryName: '素菜', price: 8, desc: '经典家常，酸甜开胃', sales: 567, icon: '🍳' },
+            { id: 7, name: '🍚 米饭', categoryId: 3, categoryName: '主食', price: 2, desc: '东北大米，香软可口', sales: 1234, icon: '🍚' },
+            { id: 8, name: '🍜 牛肉面', categoryId: 3, categoryName: '主食', price: 16, desc: '大块牛肉，手工拉面', sales: 345, icon: '🍜' },
+            { id: 9, name: '🥣 紫菜蛋花汤', categoryId: 4, categoryName: '汤品', price: 3, desc: '清淡鲜美，暖胃暖心', sales: 678, icon: '🥣' },
+            { id: 10, name: '🍵 玉米排骨汤', categoryId: 4, categoryName: '汤品', price: 8, desc: '慢火熬制，营养滋补', sales: 234, icon: '🍵' }
+        ];
+        
+        // 分类数据
+        const categories = [
+            { id: 0, name: '全部' },
+            { id: 1, name: '荤菜' },
+            { id: 2, name: '素菜' },
+            { id: 3, name: '主食' },
+            { id: 4, name: '汤品' }
+        ];
+        
+        let cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        let currentUser = null;
+        
+        // 检查登录
+        function checkLogin() {
+            currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return false;
+            }
+            document.getElementById('userName').innerText = currentUser.real_name || currentUser.username;
+            return true;
+        }
+        
+        // 渲染分类
+        function renderCategories() {
+            let html = '';
+            categories.forEach(cat => {
+                html += `<div class="category-item" data-id="${cat.id}">${cat.name}</div>`;
+            });
+            document.getElementById('categoryTabs').innerHTML = html;
+            
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    renderDishes(this.dataset.id);
+                });
+            });
+            document.querySelector('.category-item').classList.add('active');
+        }
+        
+        // 渲染菜品
+        function renderDishes(categoryId = '0') {
+            let keyword = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = dishesData.filter(d => {
+                let matchCategory = categoryId === '0' || d.categoryId == categoryId;
+                let matchKeyword = d.name.toLowerCase().includes(keyword);
+                return matchCategory && matchKeyword;
+            });
+            
+            if (filtered.length === 0) {
+                document.getElementById('dishList').innerHTML = '<div class="empty-state"><span>🍽️</span><p>暂无相关菜品</p></div>';
+                return;
+            }
+            
+            let html = '';
+            filtered.forEach(dish => {
+                let count = cart[dish.id] || 0;
+                html += `
+                    <div class="dish-card">
+                        <div class="dish-img">${dish.icon}</div>
+                        <div class="dish-info">
+                            <div class="dish-name">${dish.name}</div>
+                            <div class="dish-desc">${dish.desc}</div>
+                            <div class="dish-price">¥${dish.price}<small> 元</small></div>
+                            <div class="dish-sales">月销 ${dish.sales}+ 份</div>
+                        </div>
+                        <div class="cart-control">
+                            <button onclick="updateCart(${dish.id}, ${count - 1})">−</button>
+                            <span class="count">${count}</span>
+                            <button onclick="updateCart(${dish.id}, ${count + 1})">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('dishList').innerHTML = html;
+            updateCartBar();
+        }
+        
+        function updateCart(dishId, newCount) {
+            let dish = dishesData.find(d => d.id == dishId);
+            if (!dish) return;
+            
+            if (newCount <= 0) {
+                delete cart[dishId];
+            } else {
+                cart[dishId] = newCount;
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderDishes(document.querySelector('.category-item.active')?.dataset.id || '0');
+        }
+        
+        function updateCartBar() {
+            let total = 0;
+            let count = 0;
+            for (let id in cart) {
+                let dish = dishesData.find(d => d.id == id);
+                if (dish) {
+                    let qty = cart[id];
+                    count += qty;
+                    total += dish.price * qty;
+                }
+            }
+            document.getElementById('cartCount').innerText = count;
+            document.getElementById('cartTotal').innerText = '¥' + total.toFixed(2);
+            document.getElementById('emptyTip').innerText = count === 0 ? '暂无商品' : '';
+        }
+        
+        function showCartTip() {
+            if (Object.keys(cart).length === 0) {
+                alert('🛒 购物车是空的，先去选些美食吧~');
+            }
+        }
+        
+        function searchDish() {
+            renderDishes(document.querySelector('.category-item.active')?.dataset.id || '0');
+        }
+        
+        function goToConfirm() {
+            if (Object.keys(cart).length === 0) {
+                alert('请先添加菜品再下单');
+                return;
+            }
+            window.location.href = 'order.html';
+        }
+        
+        // 检查新消息
+        function checkMessages() {
+            let userId = currentUser?.id;
+            if (userId) {
+                let messages = JSON.parse(localStorage.getItem('messages_' + userId) || '[]');
+                let unreadCount = messages.filter(m => m.status === 0).length;
+                let badge = document.getElementById('msgBadge');
+                if (unreadCount > 0) {
+                    badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+        
+        if (checkLogin()) {
+            renderCategories();
+            renderDishes('0');
+            setInterval(checkMessages, 3000);
+            checkMessages();
+        }
+    </script>
+</body>
+</html>

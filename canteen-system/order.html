@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>确认订单 · 付款</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f7fb;
+            padding-bottom: 100px;
+        }
+        
+        .header {
+            background: white;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .back-btn {
+            font-size: 26px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            background: #f0f2f5;
+        }
+        
+        .back-btn:active {
+            background: #e0e4e8;
+        }
+        
+        .header h1 {
+            font-size: 19px;
+            flex: 1;
+            font-weight: 600;
+        }
+        
+        .section {
+            background: white;
+            margin: 14px 16px;
+            border-radius: 24px;
+            padding: 18px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            padding-left: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .user-info:last-child {
+            border-bottom: none;
+        }
+        
+        .user-info span:first-child {
+            color: #888;
+        }
+        
+        .user-info span:last-child {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .dish-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .dish-item:last-child {
+            border-bottom: none;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0 6px 0;
+            font-weight: 600;
+            border-top: 1px solid #eee;
+            margin-top: 8px;
+        }
+        
+        .total-amount {
+            color: #f5576c;
+            font-size: 22px;
+        }
+        
+        .remark-input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #eee;
+            border-radius: 18px;
+            font-size: 14px;
+            background: #f8f9fa;
+        }
+        
+        .remark-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+        
+        .payment-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 -6px 20px rgba(0,0,0,0.08);
+            border-radius: 28px 28px 0 0;
+        }
+        
+        .pay-amount {
+            font-size: 27px;
+            font-weight: 800;
+            color: #f5576c;
+        }
+        
+        .pay-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 2px;
+        }
+        
+        .btn-pay {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 44px;
+            border-radius: 40px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 6px 15px rgba(102,126,234,0.3);
+        }
+        
+        .btn-pay:active {
+            transform: scale(0.96);
+        }
+        
+        .pickup-preview {
+            background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+            border-radius: 20px;
+            padding: 14px;
+            margin-top: 12px;
+            text-align: center;
+            border: 1px dashed #ddd;
+        }
+        
+        .pickup-preview small {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="back-btn" onclick="history.back()">←</div>
+        <h1>确认订单</h1>
+        <div style="width: 40px;"></div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">📋 订单信息</div>
+        <div class="user-info">
+            <span>👤 收货人</span>
+            <span id="userName">-</span>
+        </div>
+        <div class="user-info">
+            <span>📞 联系电话</span>
+            <span id="userPhone">-</span>
+        </div>
+        <div class="user-info">
+            <span>🏫 取餐地点</span>
+            <span>食堂二楼取餐窗口</span>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">🍽️ 点餐明细</div>
+        <div id="dishList"></div>
+        <div class="total-row">
+            <span>共 <span id="totalCount">0</span> 件商品</span>
+            <span class="total-amount" id="totalAmount">¥0.00</span>
+        </div>
+        <div class="pickup-preview">
+            <small>📌 付款后将自动生成取餐码，凭码取餐</small>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">📝 备注信息</div>
+        <input type="text" class="remark-input" id="remark" placeholder="口味偏好、忌口等（选填）">
+    </div>
+    
+    <div class="payment-bar">
+        <div>
+            <div class="pay-label">实付金额</div>
+            <div class="pay-amount" id="payAmount">¥0.00</div>
+        </div>
+        <button class="btn-pay" onclick="submitOrder()">确认付款</button>
+    </div>
+    
+    <script>
+        const dishesData = [
+            { id: 1, name: '🍗 蜜汁烤鸡腿', price: 12 },
+            { id: 2, name: '🥩 红烧肉', price: 15 },
+            { id: 3, name: '🐟 清蒸鲈鱼', price: 18 },
+            { id: 4, name: '🥬 蒜蓉空心菜', price: 6 },
+            { id: 5, name: '🥦 西兰花炒木耳', price: 7 },
+            { id: 6, name: '🍲 西红柿炒蛋', price: 8 },
+            { id: 7, name: '🍚 米饭', price: 2 },
+            { id: 8, name: '🍜 牛肉面', price: 16 },
+            { id: 9, name: '🥣 紫菜蛋花汤', price: 3 },
+            { id: 10, name: '🍵 玉米排骨汤', price: 8 }
+        ];
+        
+        let cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        }
+        
+        document.getElementById('userName').innerText = currentUser.real_name || currentUser.username;
+        document.getElementById('userPhone').innerText = currentUser.phone || '未填写';
+        
+        function generateOrderNo() {
+            return 'ORD' + new Date().getTime() + Math.floor(Math.random() * 1000);
+        }
+        
+        function generatePickupCode() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+        
+        function renderOrder() {
+            let totalAmount = 0;
+            let totalCount = 0;
+            let html = '';
+            let cartItems = [];
+            
+            for (let id in cart) {
+                let dish = dishesData.find(d => d.id == id);
+                if (dish) {
+                    let qty = cart[id];
+                    let subtotal = dish.price * qty;
+                    totalAmount += subtotal;
+                    totalCount += qty;
+                    cartItems.push({id: dish.id, name: dish.name, price: dish.price, qty: qty});
+                    html += `
+                        <div class="dish-item">
+                            <div><span style="font-weight:500;">${dish.name}</span> <span style="color:#888;">×${qty}</span></div>
+                            <div>¥${subtotal.toFixed(2)}</div>
+                        </div>
+                    `;
+                }
+            }
+            
+            if (totalCount === 0) {
+                alert('购物车为空');
+                history.back();
+                return;
+            }
+            
+            document.getElementById('dishList').innerHTML = html;
+            document.getElementById('totalCount').innerText = totalCount;
+            document.getElementById('totalAmount').innerText = '¥' + totalAmount.toFixed(2);
+            document.getElementById('payAmount').innerText = '¥' + totalAmount.toFixed(2);
+            
+            return { totalAmount, totalCount, cartItems };
+        }
+        
+        function submitOrder() {
+            console.log("开始提交订单...");
+            
+            let orderData = renderOrder();
+            if (!orderData || orderData.totalCount === 0) {
+                alert('购物车是空的，请先添加菜品');
+                return;
+            }
+            
+            let orderNo = generateOrderNo();
+            let pickupCode = generatePickupCode();
+            let now = new Date();
+            let timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+            
+            // 创建订单
+            let order = {
+                id: Date.now(),
+                orderNo: orderNo,
+                userId: currentUser.id,
+                userName: currentUser.real_name || currentUser.username,
+                totalPrice: orderData.totalAmount,
+                pickupCode: pickupCode,
+                remark: document.getElementById('remark').value,
+                orderStatus: 1,  // 1=已付款待出餐
+                details: orderData.cartItems,
+                createTime: timeStr,
+                payTime: timeStr,
+                cookTime: null,
+                pickupTime: null
+            };
+            
+            console.log("订单对象:", order);
+            
+            // 获取已有订单
+            let ordersKey = 'orders_' + currentUser.id;
+            let existingOrders = JSON.parse(localStorage.getItem(ordersKey) || '[]');
+            console.log("已有订单数量:", existingOrders.length);
+            
+            // 添加新订单
+            existingOrders.unshift(order);
+            localStorage.setItem(ordersKey, JSON.stringify(existingOrders));
+            
+            // 验证保存是否成功
+            let savedOrders = JSON.parse(localStorage.getItem(ordersKey) || '[]');
+            console.log("保存后订单数量:", savedOrders.length);
+            
+            // 清空购物车
+            localStorage.removeItem('cart');
+            
+            // 发送支付成功消息
+            let messagesKey = 'messages_' + currentUser.id;
+            let existingMessages = JSON.parse(localStorage.getItem(messagesKey) || '[]');
+            existingMessages.unshift({
+                id: Date.now(),
+                title: '订单支付成功',
+                content: `订单 ${orderNo} 已支付成功，厨房正在备餐中，预计10-15分钟出餐~`,
+                type: 1,
+                status: 0,
+                createTime: timeStr,
+                orderId: order.id
+            });
+            localStorage.setItem(messagesKey, JSON.stringify(existingMessages));
+            
+            alert(`✅ 下单成功！\n取餐码：${pickupCode}\n请凭码到食堂取餐窗口取餐`);
+            window.location.href = 'orderDetail.html?id=' + order.id;
+        }
+        
+        renderOrder();
+    </script>
+</body>
+</html>
